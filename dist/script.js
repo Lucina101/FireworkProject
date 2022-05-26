@@ -39,12 +39,15 @@ const gui = new dat.GUI();
 const guiControls = new function () {
   this.ParticleSize = 300;
   this.AutoLaunch = true;
+  this.RectTexture = false;
 }();
 gui.add(guiControls, 'ParticleSize', 100, 600);
 gui.add(guiControls, 'AutoLaunch').onChange(e => {
   isAutoLaunch = e;
   outputDom.style.cursor = isAutoLaunch ? 'auto' : 'pointer';
 });
+
+
 
 const getRandomNum = (max = 0, min = 0) => Math.floor(Math.random() * (max + 1 - min)) + min;
 
@@ -71,6 +74,18 @@ const drawRadialGradation = (ctx, canvasRadius, canvasW, canvasH) => {
   ctx.restore();
 };
 
+
+const drawRadialGradation_two = (ctx, canvasRadius, canvasW, canvasH) => {
+  ctx.save();
+  const gradient = ctx.createRadialGradient(canvasRadius, canvasRadius, 0, canvasRadius, canvasRadius, canvasRadius);
+  gradient.addColorStop(0.0, 'rgba(255,255,255,1.0)');
+ // gradient.addColorStop(0.5, 'rgba(255,255,255,0.5)');
+ // gradient.addColorStop(1.0, 'rgba(255,255,255,0)');
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, canvasW, canvasH);
+  ctx.restore();
+};
+
 const getTexture = () => {
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
@@ -90,6 +105,34 @@ const getTexture = () => {
 };
 
 canvasTexture = getTexture();
+
+const shader_option = () => {
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+
+  const diameter = textureSize;
+  canvas.width = diameter;
+  canvas.height = diameter;
+  const canvasRadius = diameter / 2;
+  drawRadialGradation_two(ctx, canvasRadius, canvas.width, canvas.height);
+  const texture = new THREE.Texture(canvas);
+  texture.type = THREE.FloatType;
+  texture.needsUpdate = true;
+  canvasTexture = texture
+}
+
+let rectTexture = false;
+
+gui.add(guiControls, 'RectTexture').onChange(e => {
+  rectTexture = e;
+  if (rectTexture) {    
+    shader_option()
+  } else {    
+    canvasTexture = getTexture()
+  }
+});
+
+
 
 const getPointMesh = (num, vels, type) => {
   // geometry
